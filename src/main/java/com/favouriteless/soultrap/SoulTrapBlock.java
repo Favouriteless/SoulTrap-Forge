@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -42,6 +43,7 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.Random;
@@ -49,16 +51,6 @@ import java.util.Random;
 public class SoulTrapBlock extends Block {
 
     public static final Random RANDOM = new Random();
-
-    public static final EntityType<?>[] VALID_ENTITIES = new EntityType[] {
-            EntityType.ZOMBIE,
-            EntityType.SKELETON,
-            EntityType.SPIDER,
-            EntityType.CAVE_SPIDER,
-            EntityType.BLAZE,
-            EntityType.MAGMA_CUBE,
-            EntityType.SILVERFISH
-    };
 
     public SoulTrapBlock(Properties settings) {
         super(settings);
@@ -151,10 +143,11 @@ public class SoulTrapBlock extends Block {
     }
 
     public static boolean checkValidEntity(Entity entity) {
-        for(EntityType<?> entityType : VALID_ENTITIES) {
-            if(entity.getType() == entityType) {
-                return true;
-            }
+        for(String entityString : SoulTrapConfig.MOB_LIST.get()) {
+            EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(entityString));
+            boolean matches = entity.getType() == entityType;
+
+            return SoulTrapConfig.BLACKLIST_MODE.get() != matches;
         }
         return false;
     }
