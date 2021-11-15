@@ -21,32 +21,26 @@
 
 package com.favouriteless.soultrap;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
+import net.minecraft.util.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -57,11 +51,10 @@ public class SoulTrapBlock extends Block {
     public SoulTrapBlock(Properties settings) {
         super(settings);
     }
-    
-    
+
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
         if(!world.isClientSide) {
             if(checkValidCage(world, pos)) {
                 List<Entity> entities = getTrapEntities(world, pos);
@@ -71,33 +64,33 @@ public class SoulTrapBlock extends Block {
                         if(checkValidEntity(entity)) {
                             destroyCage(world, pos);
                             createSpawner(world, pos, (LivingEntity)entity);
-                            entity.remove(Entity.RemovalReason.DISCARDED);
+                            entity.remove();
                             if(!player.isCreative() && player.experienceLevel >= SoulTrapConfig.XP_COST.get()) {
                                 player.giveExperienceLevels(-SoulTrapConfig.XP_COST.get());
                             }
-                            world.playSound(null, pos, SoundEvents.ELDER_GUARDIAN_CURSE, SoundSource.MASTER, 1f, 0.3f);
+                            world.playSound(null, pos, SoundEvents.ELDER_GUARDIAN_CURSE, SoundCategory.MASTER, 1f, 0.3f);
                         } else {
-                            player.displayClientMessage(new TextComponent("Creature is not valid.").withStyle(ChatFormatting.RED), false);
-                            world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundSource.BLOCKS, 1f, 0.5f);
+                            player.displayClientMessage(new StringTextComponent("Creature is not valid.").withStyle(TextFormatting.RED), false);
+                            world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundCategory.BLOCKS, 1f, 0.5f);
                         }
                     } else {
-                        player.displayClientMessage(new TextComponent("Too many creatures.").withStyle(ChatFormatting.RED), false);
-                        world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundSource.BLOCKS, 1f, 0.5f);
+                        player.displayClientMessage(new StringTextComponent("Too many creatures.").withStyle(TextFormatting.RED), false);
+                        world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundCategory.BLOCKS, 1f, 0.5f);
                     }
                 } else {
-                    player.displayClientMessage(new TextComponent("Creature not found.").withStyle(ChatFormatting.RED), false);
-                    world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundSource.BLOCKS, 1f, 0.5f);
+                    player.displayClientMessage(new StringTextComponent("Creature not found.").withStyle(TextFormatting.RED), false);
+                    world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundCategory.BLOCKS, 1f, 0.5f);
                 }
             } else {
-                player.displayClientMessage(new TextComponent("Cage is not valid").withStyle(ChatFormatting.RED), false);
-                world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundSource.BLOCKS, 1f, 0.5f);
+                player.displayClientMessage(new StringTextComponent("Cage is not valid").withStyle(TextFormatting.RED), false);
+                world.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE, SoundCategory.BLOCKS, 1f, 0.5f);
             }
-            return InteractionResult.CONSUME;
+            return ActionResultType.CONSUME;
         }
-        return InteractionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
-    public static boolean checkValidCage(Level world, BlockPos pos) {
+    public static boolean checkValidCage(World world, BlockPos pos) {
         BlockPos[] ironBlocks = new BlockPos[] {
                 pos.relative(Direction.NORTH).relative(Direction.WEST), // NorthWest
                 pos.relative(Direction.NORTH).relative(Direction.EAST), // NorthEast
@@ -159,8 +152,8 @@ public class SoulTrapBlock extends Block {
         return false;
     }
 
-    public static List<Entity> getTrapEntities(Level world, BlockPos pos) {
-        List<Entity> entities =  world.getEntities(null, new AABB(pos.offset(new BlockPos(-1, 1, -1)), pos.offset(new BlockPos(1, 3, 1))));
+    public static List<Entity> getTrapEntities(World world, BlockPos pos) {
+        List<Entity> entities =  world.getEntities(null, new AxisAlignedBB(pos.offset(new BlockPos(-1, 1, -1)), pos.offset(new BlockPos(1, 3, 1))));
 
         for(int i = entities.size() - 1; i >= 0; i--) {
             if(!(entities.get(i) instanceof LivingEntity)) {
@@ -170,7 +163,7 @@ public class SoulTrapBlock extends Block {
         return entities;
     }
 
-    public static void destroyCage(Level world, BlockPos pos) {
+    public static void destroyCage(World world, BlockPos pos) {
         BlockPos startPos = pos.offset(-1, 0, -1);
 
         for(int x = 0; x < 3; x++) {
@@ -183,16 +176,16 @@ public class SoulTrapBlock extends Block {
         }
     }
 
-    public static void createSpawner(Level world, BlockPos pos, LivingEntity entity) {
+    public static void createSpawner(World world, BlockPos pos, LivingEntity entity) {
         world.setBlockAndUpdate(pos, Blocks.SPAWNER.defaultBlockState());
-        SpawnerBlockEntity blockEntity = (SpawnerBlockEntity)world.getBlockEntity(pos);
+        MobSpawnerTileEntity blockEntity = (MobSpawnerTileEntity)world.getBlockEntity(pos);
         blockEntity.getSpawner().setEntityId(entity.getType());
     }
 
-    public static void spawnParticles(Level world, BlockPos pos) {
+    public static void spawnParticles(World world, BlockPos pos) {
         if(!world.isClientSide) {
             for (int i = 0; i < 3; i++) {
-                ((ServerLevel)world).sendParticles(ParticleTypes.LARGE_SMOKE,
+                ((ServerWorld)world).sendParticles(ParticleTypes.LARGE_SMOKE,
                         pos.getX() + RANDOM.nextDouble(),
                         pos.getY() + RANDOM.nextDouble(),
                         pos.getZ() + RANDOM.nextDouble(),
@@ -200,7 +193,6 @@ public class SoulTrapBlock extends Block {
                         0D, 0D, 0D,
                         0f
                 );
-
             }
         }
     }
