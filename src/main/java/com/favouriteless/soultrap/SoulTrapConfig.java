@@ -23,8 +23,6 @@ package com.favouriteless.soultrap;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class SoulTrapConfig {
 
@@ -32,12 +30,14 @@ public class SoulTrapConfig {
     public static final ForgeConfigSpec SPEC;
 
     public static final ForgeConfigSpec.ConfigValue<Boolean> BLACKLIST_MODE;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MOB_LIST;
+    public static final ForgeConfigSpec.ConfigValue<String> MOB_LIST;
+    public static final ForgeConfigSpec.ConfigValue<Integer> XP_COST;
 
     static {
         BUILDER.push("Soul Trap Configuration");
+        MOB_LIST = BUILDER.define("creature_list", "minecraft:zombie, minecraft:skeleton, minecraft:spider, minecraft:cave_spider, minecraft:blaze, minecraft:magma_cube, minecraft:silverfish");
         BLACKLIST_MODE = BUILDER.comment("Enable blacklist mode").define("blacklist", false);
-        MOB_LIST = BUILDER.define("creature_list", Arrays.asList("minecraft:zombie", "minecraft:skeleton", "minecraft:spider", "minecraft:cave_spider", "minecraft:blaze", "minecraft:magma_cube", "minecraft:silverfish"));
+        XP_COST = BUILDER.comment("XP Levels Consumed").define("cost", 0);
         BUILDER.pop();
 
         SPEC = BUILDER.build();

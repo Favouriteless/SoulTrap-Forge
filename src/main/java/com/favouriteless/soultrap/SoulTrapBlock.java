@@ -28,6 +28,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -45,6 +46,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -70,7 +72,9 @@ public class SoulTrapBlock extends Block {
                             destroyCage(world, pos);
                             createSpawner(world, pos, (LivingEntity)entity);
                             entity.remove(Entity.RemovalReason.DISCARDED);
-
+                            if(!player.isCreative() && player.experienceLevel >= SoulTrapConfig.XP_COST.get()) {
+                                player.giveExperienceLevels(-SoulTrapConfig.XP_COST.get());
+                            }
                             world.playSound(null, pos, SoundEvents.ELDER_GUARDIAN_CURSE, SoundSource.MASTER, 1f, 0.3f);
                         } else {
                             player.displayClientMessage(new TextComponent("Creature is not valid.").withStyle(ChatFormatting.RED), false);
@@ -143,7 +147,10 @@ public class SoulTrapBlock extends Block {
     }
 
     public static boolean checkValidEntity(Entity entity) {
-        for(String entityString : SoulTrapConfig.MOB_LIST.get()) {
+        String listString = SoulTrapConfig.MOB_LIST.get();
+        String[] mobList = listString.split("\\s*,\\s*");
+
+        for(String entityString : mobList) {
             EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(entityString));
             boolean matches = entity.getType() == entityType;
 

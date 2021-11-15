@@ -35,7 +35,7 @@ public class SoulTrap
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
-    public static final RegistryObject<Block> SOUL_TRAP_BLOCK = BLOCKS.register("soul_trap", () -> new SoulTrapBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.5F).lightLevel((state) -> 3).noOcclusion()));
+    public static final RegistryObject<Block> SOUL_TRAP_BLOCK = BLOCKS.register("soul_trap", () -> new SoulTrapBlock(BlockBehaviour.Properties.copy(Blocks.OBSIDIAN).lightLevel((state) -> 3).noOcclusion().requiresCorrectToolForDrops()));
     public static final RegistryObject<Item> SOUL_TRAP_ITEM = ITEMS.register("soul_trap", () -> new BlockItem(SOUL_TRAP_BLOCK.get(), new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_REDSTONE)));
 
     public SoulTrap() {
