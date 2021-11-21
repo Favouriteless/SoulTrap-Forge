@@ -147,8 +147,7 @@ public class SoulTrapBlock extends Block {
     }
 
     public static boolean checkValidEntity(Entity entity) {
-        String listString = SoulTrapConfig.MOB_LIST.get();
-        String[] mobList = listString.split("\\s*,\\s*");
+        List<String> mobList = (List<String>) SoulTrapConfig.MOB_LIST.get();
 
         for(String entityString : mobList) {
             EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(entityString));
