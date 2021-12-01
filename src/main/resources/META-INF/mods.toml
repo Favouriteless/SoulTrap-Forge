@@ -19,6 +19,6 @@ A mod to allow you to create your own spawners in a balanced, vanilla styled way
 '''
 
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[1.17.1,1.18)"
+    versionRange="[1.18.1,1.19)"
     ordering="NONE"
     side="BOTH"
