@@ -151,11 +151,14 @@ public class SoulTrapBlock extends Block {
 
         for(String entityString : mobList) {
             EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(entityString));
+
             boolean matches = entity.getType() == entityType;
 
-            return SoulTrapConfig.BLACKLIST_MODE.get() != matches;
+            if(matches) {
+                return !SoulTrapConfig.BLACKLIST_MODE.get();
+            }
         }
-        return false;
+        return SoulTrapConfig.BLACKLIST_MODE.get();
     }
 
     public static List<Entity> getTrapEntities(Level world, BlockPos pos) {
